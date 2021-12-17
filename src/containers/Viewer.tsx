@@ -34,6 +34,15 @@ const useStyles = makeStyles(theme => ({
     left: "50%",
     transform: "translateY(-50%) translateX(-50%)",
   },
+  buttons: {
+    position: "absolute",
+    top: "5%",
+    left: "5%",
+    //    transform: "translateY(-50%) translateX(-50%)",
+  },
+  button: {
+    marginRight: 10,
+  },
   canvas: {
     outline: 0,
   },
@@ -181,9 +190,117 @@ export const Viewer: React.FC<ViewerProps> = observer(
       setPreventInteraction(showBackdrop);
     }, [showBackdrop, setPreventInteraction]);
 
+    function SwapMaterial() {
+      const root = viewer?.gltfScene?.root;
+
+      const table = root?.findByName(
+        "DiningRoomTable_StaticMeshComponent0",
+      ) as pc.Entity;
+      const model = table?.model;
+      const material0 = model?.meshInstances[0].material as pc.StandardMaterial;
+      const material1 = model?.meshInstances[1].material as pc.StandardMaterial;
+
+      const temp = material1.diffuseMap;
+      material1.diffuseMap = material0.diffuseMap;
+      material0.diffuseMap = temp;
+      material0.update();
+      material1.update();
+    }
+
+    function VisibleSwitch() {
+      const root = viewer?.gltfScene?.root;
+
+      const arr = [
+        "Book2_StaticMeshComponent0",
+        "Book3_StaticMeshComponent0",
+        "Book4_StaticMeshComponent0",
+        "Book12_StaticMeshComponent0",
+        "Bowl2_StaticMeshComponent0",
+        "CoffeeTable1_StaticMeshComponent0",
+        "CoffeeTable2_StaticMeshComponent0",
+        "Vase1_StaticMeshComponent0",
+        "Vase2_StaticMeshComponent0",
+        "LivingRoomRug_StaticMeshComponent0",
+      ];
+
+      arr.forEach(name => {
+        const obj = root?.findByName(name) as pc.Entity;
+        obj.enabled = !obj.enabled;
+      });
+    }
+
+    function CloneObject() {
+      const root = viewer?.gltfScene?.root;
+      const table = root?.findByName(
+        "LivingRoomChair_StaticMeshComponent0",
+      ) as pc.Entity;
+      const cloneObject = table.clone();
+      root?.addChild(cloneObject);
+      cloneObject.name = "NewChair";
+      cloneObject.setLocalPosition(table.getLocalPosition());
+      cloneObject.translateLocal(0, 0, 1.0);
+    }
+
+    function RotateObject() {
+      const root = viewer?.gltfScene?.root;
+      const table = root?.findByName("NewChair") as pc.Entity;
+      setInterval(() => {
+        table.rotate(0, 1, 0);
+      }, 10);
+    }
+
+    let value = 0.0;
+    function TranslateObject() {
+      const root = viewer?.gltfScene?.root;
+      const obj = root?.findByName("Pillow_StaticMeshComponent0") as pc.Entity;
+      const pos = obj.getLocalPosition();
+      setInterval(() => {
+        value += 0.02;
+        obj.setLocalPosition(pos.x, pos.y + Math.sin(value) * 0.002, pos.z);
+      }, 5);
+    }
+
     return (
       <div className={classes.root} {...getRootProps()}>
         <div className={classes.canvasWrapper}>
+          <div className={classes.buttons}>
+            <button
+              className={classes.button}
+              type="button"
+              onClick={SwapMaterial}
+            >
+              swap material
+            </button>
+            <button
+              className={classes.button}
+              type="button"
+              onClick={CloneObject}
+            >
+              clone object
+            </button>
+            <button
+              className={classes.button}
+              type="button"
+              onClick={TranslateObject}
+            >
+              translate object
+            </button>
+            <button
+              className={classes.button}
+              type="button"
+              onClick={RotateObject}
+            >
+              rotate object
+            </button>
+            <button
+              className={classes.button}
+              type="button"
+              onClick={VisibleSwitch}
+            >
+              visible
+            </button>
+          </div>
+
           <canvas className={classes.canvas} ref={canvasRef} />
         </div>
         <Backdrop

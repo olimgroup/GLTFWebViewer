@@ -97,6 +97,14 @@ export class PlayCanvasViewer implements TestableViewer {
     (window as any).getStats = this._getStats.bind(this);
   }
 
+  public _test(str: string) {
+    console.log(str);
+  }
+
+  public get gltfScene(): GltfSceneData | undefined {
+    return this._activeGltfScene;
+  }
+
   public get app() {
     return this._app;
   }
