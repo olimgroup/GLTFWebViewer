@@ -90,7 +90,7 @@ class NodeLightmap extends pc.ScriptType {
     if (!material) {
       const { texture, texCoord } = nodeLightmap;
       material = originalMaterial.clone();
-
+      material.useSkybox = false;
       material.lightMap = texture.resource;
       material.lightMapUv = texCoord;
       material.chunks.lightmapSinglePS = this._createLightmapSinglePS();

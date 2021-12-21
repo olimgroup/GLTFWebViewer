@@ -67,6 +67,11 @@ export const Gltf: React.FC<GltfProps> = observer(({ isError }) => {
   });
 
   useEffect(() => {
+    gltfs.forEach(v => {
+      const tokens = v.filePath.split("/");
+      console.log(tokens[tokens.length - 2]);
+      v.folderName = tokens[tokens.length - 2];
+    });
     setView(
       selectedGltf
         ? levelVariantSet
@@ -127,7 +132,7 @@ export const Gltf: React.FC<GltfProps> = observer(({ isError }) => {
                     />
                   }
                 >
-                  {gltf.name}
+                  {gltf.folderName}
                 </NavListItem>
               ))}
             </NavList>

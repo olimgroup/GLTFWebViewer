@@ -190,12 +190,22 @@ export const Viewer: React.FC<ViewerProps> = observer(
       setPreventInteraction(showBackdrop);
     }, [showBackdrop, setPreventInteraction]);
 
+    function SkyLightOnOff() {
+      const root = viewer?.gltfScene?.root;
+      root?.forEach(node => {
+        const model = (node as pc.Entity).model;
+        model?.meshInstances.forEach(instance => {
+          const material = instance.material as pc.StandardMaterial;
+          material.useSkybox = !material.useSkybox;
+          material.update();
+        });
+      });
+    }
+
     function SwapMaterial() {
       const root = viewer?.gltfScene?.root;
 
-      const table = root?.findByName(
-        "DiningRoomTable_StaticMeshComponent0",
-      ) as pc.Entity;
+      const table = root?.findByName("DiningRoomTable") as pc.Entity;
       const model = table?.model;
       const material0 = model?.meshInstances[0].material as pc.StandardMaterial;
       const material1 = model?.meshInstances[1].material as pc.StandardMaterial;
@@ -211,16 +221,16 @@ export const Viewer: React.FC<ViewerProps> = observer(
       const root = viewer?.gltfScene?.root;
 
       const arr = [
-        "Book2_StaticMeshComponent0",
-        "Book3_StaticMeshComponent0",
-        "Book4_StaticMeshComponent0",
-        "Book12_StaticMeshComponent0",
-        "Bowl2_StaticMeshComponent0",
-        "CoffeeTable1_StaticMeshComponent0",
-        "CoffeeTable2_StaticMeshComponent0",
-        "Vase1_StaticMeshComponent0",
-        "Vase2_StaticMeshComponent0",
-        "LivingRoomRug_StaticMeshComponent0",
+        "Book2",
+        "Book3",
+        "Book4",
+        "Book12",
+        "Bowl2",
+        "CoffeeTable1",
+        "CoffeeTable2",
+        "Vase1",
+        "Vase2",
+        "LivingRoomRug",
       ];
 
       arr.forEach(name => {
@@ -231,9 +241,7 @@ export const Viewer: React.FC<ViewerProps> = observer(
 
     function CloneObject() {
       const root = viewer?.gltfScene?.root;
-      const table = root?.findByName(
-        "LivingRoomChair_StaticMeshComponent0",
-      ) as pc.Entity;
+      const table = root?.findByName("LivingRoomChair") as pc.Entity;
       const cloneObject = table.clone();
       root?.addChild(cloneObject);
       cloneObject.name = "NewChair";
@@ -252,7 +260,7 @@ export const Viewer: React.FC<ViewerProps> = observer(
     let value = 0.0;
     function TranslateObject() {
       const root = viewer?.gltfScene?.root;
-      const obj = root?.findByName("Pillow_StaticMeshComponent0") as pc.Entity;
+      const obj = root?.findByName("Pillow") as pc.Entity;
       const pos = obj.getLocalPosition();
       setInterval(() => {
         value += 0.02;
@@ -263,7 +271,7 @@ export const Viewer: React.FC<ViewerProps> = observer(
     return (
       <div className={classes.root} {...getRootProps()}>
         <div className={classes.canvasWrapper}>
-          <div className={classes.buttons}>
+          {/* <div className={classes.buttons}>
             <button
               className={classes.button}
               type="button"
@@ -299,7 +307,7 @@ export const Viewer: React.FC<ViewerProps> = observer(
             >
               visible
             </button>
-          </div>
+          </div> */}
 
           <canvas className={classes.canvas} ref={canvasRef} />
         </div>

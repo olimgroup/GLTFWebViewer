@@ -48,6 +48,7 @@ export const useGltfDrop = (
       onDropGltf({
         name: path.basename(gltf.name, path.extname(gltf.name)),
         filePath: URL.createObjectURL(gltfBlob),
+        folderName: "Asdf",
         blobFileName: gltf.name,
       });
     },

@@ -4,6 +4,7 @@ export type GltfSource = {
   filePath: string;
   blobFileName?: string;
   name: string;
+  folderName?: string;
   description?: string;
   creator?: string;
   creatorUrl?: string;

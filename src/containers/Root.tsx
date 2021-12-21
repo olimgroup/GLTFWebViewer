@@ -123,24 +123,11 @@ export const Root: React.FC<RootProps> = observer(({ isLoading, isError }) => {
     <div className={classes.root}>
       {showTopbar && (
         <header className={classes.topbar}>
-          <div className={classes.topbarLogo}>
-            {topbarLogoUrl && (
-              <img
-                className={classes.topbarLogoImage}
-                src={topbarLogoUrl}
-                alt="Logo"
-              />
-            )}
-          </div>
-          <Typography className={classes.topbarTitle} variant="body2">
-            {topbarTitle !== undefined && (
-              <>
-                {topbarTitle}
-                {gltf && topbarTitle && " - "}
-                {gltf && gltf.name}
-              </>
-            )}
-          </Typography>
+          <div className={classes.topbarLogo}></div>
+          <Typography
+            className={classes.topbarTitle}
+            variant="body2"
+          ></Typography>
           <div className={classes.topbarToggle}>
             {showSidebar && (
               <SidebarToggle

@@ -231,6 +231,7 @@ export class PlayCanvasViewer implements TestableViewer {
       script.speed = 2;
       script.fastSpeed = 5;
       script.mouseSensitivity = 10;
+      camera.setLocalPosition(-3, 1.5, 2);
 
       app.root.addChild(camera);
 
