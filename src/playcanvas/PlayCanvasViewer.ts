@@ -306,7 +306,6 @@ export class PlayCanvasViewer implements TestableViewer {
 
     for (const camera of cameras) {
       const { camera: cameraComponent } = camera;
-      const currentCamera = camera;
 
       const orbitCamera = isOrbitCameraEntity(camera)
         ? camera.script[orbitCameraScriptName]
