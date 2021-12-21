@@ -16,6 +16,7 @@ import {
   SkySphere,
   skySphereScriptName,
 } from "./scripts";
+import { FlyCamera, flyCameraScriptName } from "./scripts/FlyCamera";
 import {
   PlayCanvasGltfLoader,
   GltfData,
@@ -26,6 +27,8 @@ import {
   CameraEntity,
   OrbitCameraEntity,
   isOrbitCameraEntity,
+  FlyCameraEntity,
+  isFlyCameraEntity,
   convertToCameraEntity,
 } from "./Camera";
 
@@ -44,7 +47,7 @@ export type CameraPreviewSize = {
 export class PlayCanvasViewer implements TestableViewer {
   private _app: pc.Application;
   private _activeCamera?: CameraEntity;
-  private _defaultCamera: OrbitCameraEntity;
+  private _defaultCamera: CameraEntity;
   private _loader: PlayCanvasGltfLoader;
   private _gltf?: GltfData;
   private _activeGltfScene?: GltfSceneData;
@@ -76,6 +79,7 @@ export class PlayCanvasViewer implements TestableViewer {
     this._app = this._createApp();
 
     pc.registerScript(OrbitCamera, orbitCameraScriptName);
+    pc.registerScript(FlyCamera, flyCameraScriptName);
     pc.registerScript(AnimationHotspot, animationHotspotScriptName);
     pc.registerScript(HdriBackdropScript, hdriBackdropScriptName);
     pc.registerScript(NodeLightmap, nodeLightmapScriptName);
@@ -204,21 +208,34 @@ export class PlayCanvasViewer implements TestableViewer {
     return `VRAM: Triangles ${ib} KB, Textures ${tex} KB, Vertices ${vb} KB`;
   }
 
-  private _createDefaultCamera(app: pc.Application): OrbitCameraEntity {
+  private _createDefaultCamera(app: pc.Application): CameraEntity {
     debug("Creating default camera");
 
     const camera = convertToCameraEntity(new pc.Entity("Default"));
 
-    const script = camera.script.create(OrbitCamera, {
-      enabled: false, // This is enabled later for the active camera
-    });
-    script.nearClipFactor = 0.002;
-    script.farClipFactor = 100;
-    script.allowPan = true;
+    if (pc.platform.mobile) {
+      const script = camera.script.create(OrbitCamera, {
+        enabled: false, // This is enabled later for the active camera
+      });
+      script.nearClipFactor = 0.002;
+      script.farClipFactor = 100;
+      script.allowPan = true;
 
-    app.root.addChild(camera);
+      app.root.addChild(camera);
 
-    return camera as OrbitCameraEntity;
+      return camera as OrbitCameraEntity;
+    } else {
+      const script = camera.script.create(FlyCamera, {
+        enabled: false, // This is enabled later for the active camera
+      });
+      script.speed = 2;
+      script.fastSpeed = 5;
+      script.mouseSensitivity = 10;
+
+      app.root.addChild(camera);
+
+      return camera as FlyCameraEntity;
+    }
   }
 
   private async _setSceneHierarchy(gltfScene: GltfSceneData) {
@@ -232,18 +249,29 @@ export class PlayCanvasViewer implements TestableViewer {
     this._app.root.addChild(gltfScene.root);
 
     // List orbit cameras first
-    gltfScene.cameras.sort((a, b) => {
-      const aIsOrbit = isOrbitCameraEntity(a);
-      const bIsOrbit = isOrbitCameraEntity(b);
-      return aIsOrbit === bIsOrbit ? 0 : aIsOrbit ? -1 : 1;
-    });
+    if (pc.platform.mobile) {
+      gltfScene.cameras.sort((a, b) => {
+        const aIsOrbit = isOrbitCameraEntity(a);
+        const bIsOrbit = isOrbitCameraEntity(b);
+        return aIsOrbit === bIsOrbit ? 0 : aIsOrbit ? -1 : 1;
+      });
 
+      if (!gltfScene.cameras.some(isOrbitCameraEntity)) {
+        gltfScene.cameras.unshift(this._defaultCamera);
+      }
+    } else {
+      gltfScene.cameras.sort((a, b) => {
+        const aIsFly = isFlyCameraEntity(a);
+        const bIsFly = isFlyCameraEntity(b);
+        return aIsFly === bIsFly ? 0 : aIsFly ? -1 : 1;
+      });
+
+      if (!gltfScene.cameras.some(isFlyCameraEntity)) {
+        gltfScene.cameras.unshift(this._defaultCamera);
+      }
+    }
     // Add default camera to start of camera list if no other orbit
     // cameras exist in glTF scene
-    if (!gltfScene.cameras.some(isOrbitCameraEntity)) {
-      gltfScene.cameras.unshift(this._defaultCamera);
-    }
-
     if (gltfScene.hotspots.length > 0) {
       this._initHotspots(gltfScene.hotspots);
     }
@@ -278,6 +306,8 @@ export class PlayCanvasViewer implements TestableViewer {
 
     for (const camera of cameras) {
       const { camera: cameraComponent } = camera;
+      const currentCamera = camera;
+
       const orbitCamera = isOrbitCameraEntity(camera)
         ? camera.script[orbitCameraScriptName]
         : null;
@@ -539,6 +569,8 @@ export class PlayCanvasViewer implements TestableViewer {
       camera.camera.enabled = enabled;
       if (isOrbitCameraEntity(camera)) {
         camera.script[orbitCameraScriptName].enabled = enabled;
+      } else if (isFlyCameraEntity(camera)) {
+        camera.script[flyCameraScriptName].enabled = enabled;
       }
     });
 
@@ -548,7 +580,11 @@ export class PlayCanvasViewer implements TestableViewer {
 
     // Focus the camera, but only if it's the default (orbit-)camera
     if (this._activeCamera === this._defaultCamera) {
-      this._focusOrbitCamera(this._defaultCamera.script[orbitCameraScriptName]);
+      if (isOrbitCameraEntity(this._defaultCamera)) {
+        this._focusOrbitCamera(
+          this._defaultCamera.script[orbitCameraScriptName],
+        );
+      }
     }
 
     // Resize since new camera aspect ratio might affect canvas size
