@@ -1,5 +1,6 @@
 import * as pc from "@animech-public/playcanvas";
 import { orbitCameraScriptName, OrbitCamera } from "./scripts";
+import { flyCameraScriptName, FlyCamera } from "./scripts/FlyCamera";
 
 export type CameraEntity = pc.Entity & {
   camera: pc.CameraComponent;
@@ -9,6 +10,12 @@ export type CameraEntity = pc.Entity & {
 export type OrbitCameraEntity = CameraEntity & {
   script: CameraEntity["script"] & {
     [orbitCameraScriptName]: OrbitCamera;
+  };
+};
+
+export type FlyCameraEntity = CameraEntity & {
+  script: CameraEntity["script"] & {
+    [flyCameraScriptName]: FlyCamera;
   };
 };
 
@@ -27,4 +34,10 @@ export function isOrbitCameraEntity(
   camera: CameraEntity,
 ): camera is OrbitCameraEntity {
   return camera.script?.has(orbitCameraScriptName) ?? false;
+}
+
+export function isFlyCameraEntity(
+  camera: CameraEntity,
+): camera is FlyCameraEntity {
+  return camera.script?.has(flyCameraScriptName) ?? false;
 }
