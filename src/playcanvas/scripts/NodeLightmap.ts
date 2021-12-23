@@ -190,7 +190,7 @@ class NodeLightmap extends pc.ScriptType {
         const float logBlackPoint = 0.01858136;
         float l = exp2( logL ) - logBlackPoint;
 
-        float directionality = 0.6;
+        float directionality = 3.5;
 
         float luma = l * directionality;
         vec3 color = luma * uvw;
